@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Hello World</title>
+  <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.3.6/web3.min.js"></script>
+  <script language="javascript" type="text/javascript" src="./abi.js"></script>
+  <script>
+      var contract;
+      const contractAddress = "0xD459031FE0dAFeC2e203b30aCcEdde98511D63Ce";
+      console.log("contract message called");
+      const contractMessage = async () => {
+        console.log("contract message called");
+        // contract = new web3.eth.Contract(abi, contractAddress);
+        // console.log("contract was connected to", contract);
+        let message = await contract.methods.getMessage().call();
+        console.log("message was retrieved", message)
+
+        return message;
+      }
+    const setContractMessage = async (msg) => {
+        console.log("contract was connected to", contract);
+        // 0x8143f8e795cE8ACB77d42f367a11A789c8609CA2
+        let message = await contract.methods.setMessage(msg).send({from: '0x8143f8e795cE8ACB77d42f367a11A789c8609CA2'});
+        console.log("message was retrieved", message)
+
+        return message;
+      }
+    const submitMessage = async () => {
+        var msg = document.getElementById("msg").value;
+        console.log(msg);
+        try {
+          // Request account access if needed
+          await ethereum.enable();
+          console.log("enable ethereum ran successful");
+          var message = await setContractMessage(msg);
+          console.log("message", message);
+          var messag = await contractMessage();
+          var elm = document.getElementById("message");
+          elm.innerHTML = messag;
+        } catch (error) {
+          // User denied account access...
+          console.log(error);
+        }
+    }
+    window.addEventListener('load', async () => {
+  
+      // Modern dapp browsers...
+      if (window.ethereum) {
+        window.web3 = new Web3(ethereum);
+        try {
+          // Request account access if needed
+          await ethereum.enable();
+          console.log("enable ethereum ran successful");
+          contract = new web3.eth.Contract(abi, contractAddress);
+          var message = await contractMessage();
+          console.log("message", message);
+          var elm = document.getElementById("message");
+          elm.innerHTML = message;
+        } catch (error) {
+          // User denied account access...
+          console.log(error);
+        }
+      }
+      // Non-dapp browsers...
+      else {
+        console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
+      }
+    });
+  </script>
+</head>
+<body>
+    <div class="container">
+        <div class="row well">
+            <div id="message">
+
+            </div>
+            <input claas="form-control" name="msg" id="msg" placeholder="Enter the message you want to save to your smart contract" />
+            <button class="btn btn-primary" onclick="submitMessage();">Submit</button>
+        </div>
+
+    </div>
+</body>
+</html>
