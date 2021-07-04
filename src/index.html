@@ -15,9 +15,12 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.3.6/web3.min.js"></script>
   <script language="javascript" type="text/javascript" src="./abi.js"></script>
+  <script language="javascript" type="text/javascript" src="./doc-abi.js"></script>
   <script>
       var contract;
+      var regContract;
       const contractAddress = "0xD459031FE0dAFeC2e203b30aCcEdde98511D63Ce";
+      const registryContractAddress = "0xB9A61A902540D1778a065aCC1BB2f1dE85184568";
       console.log("contract message called");
       const contractMessage = async () => {
         console.log("contract message called");
@@ -33,6 +36,24 @@
         // 0x8143f8e795cE8ACB77d42f367a11A789c8609CA2
         let message = await contract.methods.setMessage(msg).send({from: '0x8143f8e795cE8ACB77d42f367a11A789c8609CA2'});
         console.log("message was retrieved", message)
+
+        return message;
+    }
+
+    const uploadContractDocument = async (hash) => {
+        console.log("contract was connected to", contract);
+        // 0x8143f8e795cE8ACB77d42f367a11A789c8609CA2
+        let document = await regContract.methods.uploadDocument(hash).send({from: '0x8143f8e795cE8ACB77d42f367a11A789c8609CA2'});
+        console.log("document was uploaded", message)
+
+        return document;
+    }
+    const verifyContractDocument= async (hash) => {
+        // console.log("contract message called");
+        // contract = new web3.eth.Contract(abi, contractAddress);
+        // console.log("contract was connected to", contract);
+        let message = await regContract.methods.getMessage(hash).call();
+        console.log("document data was retrieved", message)
 
         return message;
       }
@@ -53,16 +74,55 @@
           console.log(error);
         }
     }
+    const uploadDocument = async () => {
+        let fileReader = new FileReader();
+        fileReader.onload = function() {
+        let documentHash = sha256(fileReader.result);
+        console.log(msg);
+        try {
+          await ethereum.enable();
+          console.log("enable ethereum ran successful");
+          var uploadDoc = await uploadContractDocument(documentHash);
+        } catch (error) {
+          // User denied account access...
+          console.log(error);
+        }
+    }
+    const verifyDocument = async () => {
+        let fileReader = new FileReader();
+        try {
+          await ethereum.enable();
+          console.log("enable ethereum ran successful");
+          fileReader.onload = function() {
+            let documentHash = sha256(fileReader.result);
+            var uploadDoc = await uploadContractDocument(documentHash);
+            // contract.verify(documentHash, function(err, result) {
+            let contractPublishDate = result.toNumber();
+            if (contractPublishDate > 0) {
+            let displayDate = new Date(
+                contractPublishDate * 1000
+            ).toLocaleString();
+
+            }
+            console.log('success');
+          }
+        } catch (error) {
+          // User denied account access...
+          console.log(error);
+        }
+    }
     window.addEventListener('load', async () => {
   
       // Modern dapp browsers...
       if (window.ethereum) {
         window.web3 = new Web3(ethereum);
+        // window.web3X = new Web3(ethereum);
         try {
           // Request account access if needed
           await ethereum.enable();
           console.log("enable ethereum ran successful");
           contract = new web3.eth.Contract(abi, contractAddress);
+          regContract = new web3.eth.Contract(docAbi, registoryContractAddress);
           var message = await contractMessage();
           console.log("message", message);
           var elm = document.getElementById("message");
